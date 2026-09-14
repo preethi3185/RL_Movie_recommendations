@@ -13,6 +13,17 @@ MovieVerse is a full-stack movie discovery prototype. It combines a Python recom
 - Genre-level contextual-bandit/Q-value reranking from feedback
 - Local CSV, JSON, and joblib persistence; no relational database
 
+## Machine learning and recommendation algorithms
+
+MovieVerse uses two lightweight machine-learning components:
+
+- **TF-IDF content model:** `TfidfVectorizer` converts movie metadata such as genres, cast, and other combined features into numerical vectors. TF-IDF gives greater importance to distinctive terms.
+- **Cosine similarity:** The system compares TF-IDF vectors using cosine similarity to identify movies with similar content and generate recommendation candidates.
+- **Contextual bandit / Q-value reranking:** A genre-level reinforcement-learning agent uses an epsilon-greedy strategy to balance exploitation of known genre preferences with exploration of new recommendations.
+- **Incremental Q-value learning:** User ratings are converted into rewards and update genre preference values using a learning-rate-based update rule.
+
+The project does not use a neural network or deep-learning model. Its learned artifacts are stored in `models/content_model.pkl` and `models/rl_agent.pkl`.
+
 
 ## Architecture at a glance
 

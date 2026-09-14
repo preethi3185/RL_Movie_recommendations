@@ -68,6 +68,17 @@ The container loads the movie catalog, creates combined features, saves the proc
 
 The rating endpoint accepts an integer from 1 to 5. `src/feedback.py` converts the rating into a reward, updates the user profile and RL agent state, and makes the changed preference signal available to later recommendation requests.
 
+### 4.4 Machine-learning algorithms
+
+MovieVerse uses a hybrid recommendation approach:
+
+1. **TF-IDF vectorization** represents combined movie metadata as numerical feature vectors.
+2. **Cosine similarity** compares those vectors to find movies with similar content.
+3. **Contextual-bandit reranking** applies an epsilon-greedy policy to balance exploration and exploitation.
+4. **Incremental Q-value updates** learn genre-level preference signals from user ratings.
+
+This is a lightweight recommendation system. It does not contain a neural network, deep-learning model, or separately trained model for each user. The generated artifacts are stored as `models/content_model.pkl` and `models/rl_agent.pkl`.
+
 ## 5. Authentication and onboarding
 
 ### Registration

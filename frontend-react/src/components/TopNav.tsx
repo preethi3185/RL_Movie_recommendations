@@ -1,11 +1,11 @@
 import type { Page } from '../types'
 
-const items: { label: Page; marker: string }[] = [
-  { label: 'Recommendations', marker: '01' },
-  { label: 'Watchlist', marker: '02' },
-  { label: 'History', marker: '03' },
-  { label: 'Dashboard', marker: '04' },
-  { label: 'Profile', marker: '05' },
+const items: { label: Page; marker?: string }[] = [
+  { label: 'Recommendations' },
+  { label: 'Watchlist' },
+  { label: 'History' },
+  { label: 'Dashboard' },
+  { label: 'Profile' },
 ]
 
 type Props = { page: Page; username: string; isDemo: boolean; onNavigate: (page: Page) => void; onLogout: () => void }
@@ -17,7 +17,7 @@ export default function TopNav({ page, username, isDemo, onNavigate, onLogout }:
       <span><strong className="block font-['Space_Grotesk'] text-[1.06rem]">MovieVerse</strong><small className="block text-[.62rem] tracking-[.15em] text-[#aebbd7]">PERSONAL CINEMA</small></span>
     </button>
     <nav className="order-3 flex w-full gap-1 overflow-x-auto lg:order-none lg:w-auto lg:flex-1" aria-label="Primary navigation">
-      {[...items, { label: 'Search' as Page, marker: '⌕' }].map((item) => <button key={item.label} className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border px-3.5 text-sm whitespace-nowrap transition duration-200 hover:-translate-y-px hover:bg-white/[.06] ${page === item.label ? 'border-[#8066ff]/40 bg-gradient-to-br from-[#8066ff]/45 to-[#16c8ee]/20 text-white' : 'border-transparent text-[#aebbd7]'}`} onClick={() => onNavigate(item.label)}><span className="font-['Space_Grotesk'] text-[.68rem] text-[#7889b1]">{item.marker}</span>{item.label}</button>)}
+      {[...items, { label: 'Search' as Page, marker: '⌕' }].map((item) => <button key={item.label} className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border px-3.5 text-sm whitespace-nowrap transition duration-200 hover:-translate-y-px hover:bg-white/[.06] ${page === item.label ? 'border-[#8066ff]/40 bg-gradient-to-br from-[#8066ff]/45 to-[#16c8ee]/20 text-white' : 'border-transparent text-[#aebbd7]'}`} onClick={() => onNavigate(item.label)}>{item.marker && <span className="font-['Space_Grotesk'] text-[.68rem] text-[#7889b1]">{item.marker}</span>}{item.label}</button>)}
     </nav>
     <div className="flex items-center gap-2"><button className="flex items-center gap-2 p-1 text-[#dce5ff]" onClick={() => onNavigate('Profile')}><span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#8066ff] to-[#16c8ee] text-xs font-bold">{username.slice(0, 2).toUpperCase()}</span><small className="hidden max-w-28 truncate text-xs sm:block">{isDemo ? 'Demo user' : username}</small></button><button className="rounded-lg border border-white/10 px-2 py-1 text-xs text-[#aebbd7] transition hover:border-[#8066ff]/50 hover:text-white" onClick={onLogout}>Log out</button></div>
   </header>

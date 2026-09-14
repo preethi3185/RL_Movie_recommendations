@@ -19,6 +19,15 @@ IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500"
 
 
 def normalize_title(value: object) -> str:
+    """
+    Cleans and normalizes movie titles for better matching against the TMDB API.
+
+    Steps:
+    1. Remove accents/special characters (Unicode NFKD).
+    2. Convert to lowercase.
+    3. Replace '&' with 'and' and remove non-alphanumeric characters.
+    4. Collapse multiple spaces into one.
+    """
     if value is None:
         return ""
     text = str(value).strip()
@@ -34,6 +43,11 @@ def normalize_title(value: object) -> str:
 
 
 def title_variants(title: str) -> list[str]:
+    """
+    Generates multiple versions of a movie title to increase the chance of a TMDB match.
+
+    Example: "The Matrix (1999)" -> ["The Matrix (1999)", "The Matrix", "matrix"]
+    """
     raw = str(title).strip()
     candidates = []
     seen: set[str] = set()
@@ -43,6 +57,7 @@ def title_variants(title: str) -> list[str]:
             candidates.append(candidate)
             seen.add(candidate)
 
+    # Handle titles with separators (e.g., "Star Wars - A New Hope")
     for separator in [":", " - ", " — ", "(", ")", "/"]:
         if separator in raw:
             base = raw.split(separator)[0].strip()
@@ -51,6 +66,7 @@ def title_variants(title: str) -> list[str]:
                 seen.add(base)
 
     normalized = normalize_title(raw)
+    # Try removing common leading articles (The, A, An)
     for candidate in [normalized, re.sub(r"^(the|a|an) ", "", normalized)]:
         if candidate and candidate not in seen:
             candidates.append(candidate)
@@ -65,6 +81,18 @@ def parse_year(value: object) -> int | None:
 
 
 def score_result(title: str, year: int | None, result: dict[str, object]) -> int:
+    """
+    Heuristic scoring system to determine the best match from TMDB search results.
+
+    Weights:
+    - Exact match (normalized): +150 (Very strong)
+    - Partial match: +80 (Strong)
+    - Prefix match (first 8 chars): +30 (Weak)
+    - Year match: +40 (Strong)
+    - Near year match (off by 1): +10 (Weak)
+    - Has poster: +25 (Necessary for UI)
+    - Has backdrop: +5 (Nice to have)
+    """
     query = normalize_title(title)
     result_title = normalize_title(result.get("title") or result.get("original_title") or "")
     result_year = None
@@ -96,9 +124,13 @@ def score_result(title: str, year: int | None, result: dict[str, object]) -> int
 
 
 def find_movie(api_key: str, title: str, year: int | None) -> dict[str, object]:
+    """
+    Queries TMDB for a movie and selects the highest-scoring match.
+    """
     best_match: dict[str, object] | None = None
     best_score = -1
 
+    # Generate a set of search queries to try based on the title variants.
     search_queries = []
     for variant in title_variants(title):
         search_queries.append(variant)
@@ -126,6 +158,7 @@ def find_movie(api_key: str, title: str, year: int | None) -> dict[str, object]:
             current_score = score_result(title, year, result)
             if current_score <= best_score:
                 continue
+            # We only accept results that actually have a poster image.
             if not result.get("poster_path"):
                 continue
             best_match = result
@@ -144,12 +177,16 @@ def find_movie(api_key: str, title: str, year: int | None) -> dict[str, object]:
 
 
 def enrich(input_path: Path, output_path: Path, unmatched_path: Path, api_key: str) -> None:
+    """
+    Main orchestration function: reads the movie list and enriches it with TMDB data.
+    """
     movies = pd.read_csv(input_path)
     existing = {}
     if output_path.exists():
         existing_frame = pd.read_csv(output_path).fillna("")
         existing = {int(row["Movie_ID"]): row.to_dict() for _, row in existing_frame.iterrows()}
 
+    # Only process movies that don't already have a valid poster URL in the existing metadata file.
     existing_poster_ids = {
         movie_id
         for movie_id, metadata in existing.items()

@@ -19,6 +19,12 @@ export default function AuthScreen({ onAuthenticated }: Props) {
       const response = mode === 'login' ? await authApi.login(email, password) : await authApi.register(email, username, password)
       onAuthenticated(response, mode === 'register')
     } catch (requestError) {
+      /**
+       * Backend Error Parsing:
+       * FastAPI returns error details in a JSON format: {"detail": "Error message"}.
+       * These regex replacements strip the JSON metadata to display only the
+       * human-readable error message to the user.
+       */
       setError(requestError instanceof Error ? requestError.message.replace(/^\{.*"detail":"?/, '').replace(/"?\}$/, '') : 'Authentication failed.')
     } finally {
       setBusy(false)

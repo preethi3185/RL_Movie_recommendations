@@ -20,7 +20,7 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
 }
 
 export const movieApi = {
-  recommendations: () => apiRequest<Movie[]>('/recommendations?limit=12'),
+  recommendations: (limit = 25, offset = 0) => apiRequest<Movie[]>(`/recommendations?limit=${limit}&offset=${offset}`),
   search: (query: string) => apiRequest<{ items: Movie[] }>(`/movies/search?q=${encodeURIComponent(query)}&limit=30`),
   watchlist: () => apiRequest<Movie[]>('/interactions/watchlist'),
   history: () => apiRequest<Movie[]>('/interactions/history'),
